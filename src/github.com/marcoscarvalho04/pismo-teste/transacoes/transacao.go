@@ -47,6 +47,7 @@ func RegistrarTransacao(novaTransacao TransacoesModel) error {
 		m = make(chan int, 1)
 		contador = 0
 	}
+	gerarIdTransacao()
 	idTransacao := <-m
 	if _, ok := TransacoesRegistradas[idTransacao]; ok {
 		return errors.New("Não foi possível gerar o id da transação. Último ID gerado: " + strconv.Itoa(idTransacao))

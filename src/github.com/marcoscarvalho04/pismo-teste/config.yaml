@@ -1,0 +1,5 @@
+informacoes: 
+  versao: "1.0.0"
+  descricao: "Sistema criado para registro de contas e transações para o teste da pismo"
+config:
+  porta: "1000"

@@ -18,3 +18,6 @@ a exibição de logs no sistema como um todo, tornando-o homogêneo neste sentid
 func RegistrarLogInformativo(mensagem string) {
 	fmt.Println("[INFO] " + mensagem)
 }
+func RegistrarLogErro(mensagem string) {
+	fmt.Println("[ERROR] - " + mensagem)
+}
