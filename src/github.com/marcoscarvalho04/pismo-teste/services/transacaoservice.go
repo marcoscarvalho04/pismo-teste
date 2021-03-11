@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/contas"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/logs"
+	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/transacoes"
 	"strconv"
+	"time"
 )
 
 type TransacaoReq struct {
@@ -57,7 +59,33 @@ func RegistrarTransacaoService(response http.ResponseWriter, request *http.Reque
 			response.WriteHeader(http.StatusBadRequest)
 			response.Write([]byte("Transação não registrada. valor positivo não é permitido para as transações do tipo: saque e compra !"))
 			return
-		} // deve melhorar se houver mais transações
+		}
+		if req.Operation_type_id == 4 && req.Amount < 0 {
+			logs.RegistrarLogErro("Transação não registrada para a conta de ID: " + strconv.Itoa(req.Account_id))
+			logs.RegistrarLogErro("Motivo: valor negativo não é permitido para as transações do tipo pagamento!")
+			response.WriteHeader(http.StatusBadRequest)
+			response.Write([]byte("Transação não registrada. Motivo: valor negativo não é permitido para as transações do tipo pagamento!"))
+			return
+		}
+		// deve melhorar se houver mais transações
+		// validações finalizadas, registrando transação para vincular àquela conta.
+		var registrarTransacao transacoes.TransacoesModel
+		registrarTransacao.ContaId = req.Account_id
+		registrarTransacao.Data = time.Now()
+		registrarTransacao.OperacaoId = req.Operation_type_id
+		registrarTransacao.Valor = float64(req.Amount)
+
+		transacaoId, errTransacao := transacoes.RegistrarTransacao(registrarTransacao)
+		if errTransacao != nil {
+			logs.RegistrarLogErro("Transação não registrada para a conta de ID: " + strconv.Itoa(req.Account_id))
+			logs.RegistrarLogErro("Motivo: Erro ao registrar a transação: " + err.Error())
+			response.WriteHeader(http.StatusInternalServerError)
+			response.Write([]byte("Erro ao registrar a transação: " + err.Error()))
+			return
+		}
+		contas.VincularTransacao(req.Account_id, transacaoId)
+		response.WriteHeader(http.StatusCreated)
+		response.Write([]byte("Transação criada sob o ID: " + strconv.Itoa(transacaoId)))
 
 	}
 }

@@ -19,5 +19,5 @@ func RegistrarLogInformativo(mensagem string) {
 	fmt.Println("[INFO] " + mensagem)
 }
 func RegistrarLogErro(mensagem string) {
-	fmt.Println("[ERROR] - " + mensagem)
+	fmt.Println("[ERROR] " + mensagem)
 }

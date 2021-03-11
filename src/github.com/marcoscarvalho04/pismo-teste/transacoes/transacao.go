@@ -42,26 +42,28 @@ func ConsultarTransacao(id int) (TransacoesModel, error) {
 	var vazio TransacoesModel
 	return vazio, error
 }
-func RegistrarTransacao(novaTransacao TransacoesModel) error {
+func RegistrarTransacao(novaTransacao TransacoesModel) (int, error) {
 	if m == nil {
 		m = make(chan int, 1)
 		contador = 0
 	}
+	if TransacoesRegistradas == nil {
+		TransacoesRegistradas = make(map[int]TransacoesModel)
+	}
 	gerarIdTransacao()
 	idTransacao := <-m
 	if _, ok := TransacoesRegistradas[idTransacao]; ok {
-		return errors.New("Não foi possível gerar o id da transação. Último ID gerado: " + strconv.Itoa(idTransacao))
+		return 0, errors.New("Não foi possível gerar o id da transação. Último ID gerado: " + strconv.Itoa(idTransacao))
 
 	}
 	TransacoesRegistradas[idTransacao] = novaTransacao
-	return nil
+	return idTransacao, nil
 
 }
 
 func gerarIdTransacao() {
 	if m == nil {
 		m = make(chan int, 1)
-		contador = 0
 	}
-	m <- contador + 1
+	m <- len(TransacoesRegistradas) + 1
 }
