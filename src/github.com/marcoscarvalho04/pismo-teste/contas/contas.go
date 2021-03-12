@@ -59,3 +59,11 @@ func VincularTransacao(contaId int, transacaoId int) error {
 	ContasRegistradas[contaId] = conta
 	return nil
 }
+
+func ConsultarConta(contaId int) (Contas, error) {
+	if IsContaExiste(contaId) != nil {
+		var contaVazia Contas
+		return contaVazia, errors.New("Erro na consulta da conta! conta não registrada na plataforma")
+	}
+	return ContasRegistradas[contaId], nil
+}

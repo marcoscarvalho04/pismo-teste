@@ -1,73 +1,63 @@
 # Teste da Pismo - Marcos Siqueira
 
-Project name is a `<utility/tool/feature>` that allows `<insert_target_audience>` to do `<action/task_it_does>`.
+Esta é a documentação feita para registrar transações e contas para o teste de ingresso na pismo. 
 
-Additional line of information text about what the project does. Your introduction should be around 2 or 3 sentences. Don't go overboard, people won't read it.
+## Pre-requisitos
 
-## Prerequisites
+Antes de iniciar, tenha certeza de que cumpre os requisitos abaixo: 
 
-Before you begin, ensure you have met the following requirements:
-<!--- These are just example requirements. Add, duplicate or remove as required --->
 
-* You have installed the latest version of `<coding_language/dependency/requirement_1>`
-* You have a `<Windows/Linux/Mac>` machine. State which OS is supported/which is not.
-* You have read `<guide/link/documentation_related_to_project>`.
+* Tenha instalada a versão  `<golang/1.14.1>` ou maior no seu computador. 
+* tenha instalado algum software de teste para API's, como exemplo do postman.
 
-## Installing <project_name>
+## Instalando o pismo_teste
 
-To install <project_name>, follow these steps:
-
-Linux and macOS:
+Para instalar este projeto nomeado  de pismo_teste, siga esses passos:
 
 ```
-<install_command>
+1. Tenha feito o clone completo do código neste repositório, da branch master. 
+2. Após o clone deste repositório, não será necessário setar as variáveis de ambiente GOPATH, uma vez que ele já está adequado para utilização de módulos, facilitando a sua instalação. 
+3. Com a versão da linguagem golang mencionada na seção anterior devidamente instalada, juntamente com o software de teste para consumo de API's, será necessário, através do prompt de comando do seu sistema operacional, navegar até á raiz do projeto. Após isso, na pasta <github.com/marcoscarvalho04/pismo-teste> execute o comando <go run main.go> para dar início ao sistema. 
 ```
 
-Windows:
+## Estrutura 
+
+Abaixo, segue a estrutura de pacotes e sua devida explicação para o projeto.
 
 ```
-<install_command>
+src
+--github.com
+---marcoscarvalho04
+----pismo-teste
+-----constantes
+-----contas
+-----logs
+-----requisicoes
+-----services
+-----transacoes
+----main.go
 ```
 
-## Using <project_name>
+Onde: 
 
-To use <project_name>, follow these steps:
+- **Constantes**: Pacote responsável por fazer a leitura do arquivo de configuração yaml e ter informações mais gerais do projeto. 
+- **Contas**: pacote responsável por fazer operações nas contas dos usuários. 
+- logs: pacote responsável por logar as informações do sistema de maneira geral e consistente. 
+- **Requisições**: pacote intermediário responsável por captar a requisição recebida no projeto principal e redirecionar para o pacote de serviços
+- **Services**: pacote de serviços. Faz o tratamento da requisição em si, respondendo com os códigos corretos e consultando os pacotes corretos que precisa para isso. Reside a maior parte das regras de negócio. 
+- **Transacoes**: pacote responsável por fazer operações sobre as transações enviadas ao sistema. 
 
-```
-<usage_example>
-```
+## Restrições e melhorias
 
-Add run commands and examples you think users will find useful. Provide an options reference for bonus points!
+Para o projeto, não foram considerados os seguintes procedimentos: 
 
-## Contributing to <project_name>
+1) Gravação de dados em banco de dados: por ter sido solicitado algo mais simples e direto, isso foi dispensado, no entanto se necessário pode ser implementado. 
 
-<!--- If your README is long or you have some specific process or steps you want contributors to follow, consider creating a separate CONTRIBUTING.md file--->
-To contribute to <project_name>, follow these steps:
+2) O path de consulta de contas não mostra as transações vinculadas ao portador, uma vez que a documentação exije isso. Isto também pode ser implementado, caso solicitado. 
 
-1. Fork this repository.
-2. Create a branch: `git checkout -b <branch_name>`.
-3. Make your changes and commit them: `git commit -m '<commit_message>'`
-4. Push to the original branch: `git push origin <project_name>/<location>`
-5. Create the pull request.
 
-Alternatively see the GitHub documentation on [creating a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
 
-## Contributors
+## Contato
 
-Thanks to the following people who have contributed to this project:
+Se quiser entrar em contato basta mandar e-mail para: <siqueira.marcos.04@gmail.com>.
 
-* [@scottydocs](https://github.com/scottydocs) 📖
-* [@cainwatson](https://github.com/cainwatson) 🐛
-* [@calchuchesta](https://github.com/calchuchesta) 🐛
-
-You might want to consider using something like the [All Contributors](https://github.com/all-contributors/all-contributors) specification and its [emoji key](https://allcontributors.org/docs/en/emoji-key).
-
-## Contact
-
-If you want to contact me you can reach me at <your_email@address.com>.
-
-## License
-
-<!--- If you're not sure which open license to use see https://choosealicense.com/--->
-
-This project uses the following license: [<license_name>](<link>).

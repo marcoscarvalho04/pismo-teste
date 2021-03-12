@@ -31,5 +31,6 @@ func ResponderCriarConta(response http.ResponseWriter, request *http.Request) {
 }
 func ResponderConsultarConta(response http.ResponseWriter, request *http.Request) {
 	logs.RegistrarLogInformativo("Pedido de consulta de conta recebido. Iniciando tratamento")
+	services.ConsultarContaService(response, request)
 
 }
