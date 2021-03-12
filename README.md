@@ -14,11 +14,11 @@ Antes de iniciar, tenha certeza de que cumpre os requisitos abaixo:
 
 Para instalar este projeto nomeado  de pismo_teste, siga esses passos:
 
-```
+
 1. Tenha feito o clone completo do código neste repositório, da branch master. 
 2. Após o clone deste repositório, não será necessário setar as variáveis de ambiente GOPATH, uma vez que ele já está adequado para utilização de módulos, facilitando a sua instalação. 
 3. Com a versão da linguagem golang mencionada na seção anterior devidamente instalada, juntamente com o software de teste para consumo de API's, será necessário, através do prompt de comando do seu sistema operacional, navegar até á raiz do projeto. Após isso, na pasta <github.com/marcoscarvalho04/pismo-teste> execute o comando <go run main.go> para dar início ao sistema. 
-```
+
 
 ## Estrutura 
 
