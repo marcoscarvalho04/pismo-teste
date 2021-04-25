@@ -6,6 +6,7 @@ import (
 )
 
 type Contas struct {
+	ContaId         int
 	NumeroDocumento int
 	Saldo           float64
 	transacoes      []int
@@ -33,6 +34,7 @@ func RegistrarConta(numeroDocumento int) (int, error) {
 		return 0, errors.New("Erro na criação da conta! Conta já existente na plataforma")
 	}
 	ContasRegistradas[novoId] = novaConta
+	novaConta.ContaId = novoId
 	return novoId, nil
 
 }
@@ -66,4 +68,12 @@ func ConsultarConta(contaId int) (Contas, error) {
 		return contaVazia, errors.New("Erro na consulta da conta! conta não registrada na plataforma")
 	}
 	return ContasRegistradas[contaId], nil
+}
+
+func ConvertConta(conta ContaDTO) Contas {
+	var contas Contas
+	contas.NumeroDocumento = conta.Document_number
+	contas.Saldo = conta.Saldo
+	contas.ContaId = conta.ContaId
+	return contas
 }
