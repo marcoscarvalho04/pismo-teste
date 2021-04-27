@@ -52,6 +52,10 @@ func RegistrarTransacao(novaTransacao TransacoesModel) (int, error) {
 	if TransacoesRegistradas == nil {
 		TransacoesRegistradas = make(map[int]TransacoesModel)
 	}
+	err := checarEAbaterSaldo(novaTransacao)
+	if err != nil {
+		return 0, err
+	}
 	gerarIdTransacao()
 	idTransacao := <-m
 	if _, ok := TransacoesRegistradas[idTransacao]; ok {
@@ -78,4 +82,13 @@ func ConverterTransacao(transacao TransacaoDTO) TransacoesModel {
 	transacaoModel.OperacaoId = transacao.Operation_type_id
 	transacaoModel.Valor = transacao.Amount
 	return transacaoModel
+}
+
+func checarEAbaterSaldo(transacao TransacoesModel) error {
+	err := contas.ModificarSaldo(transacao.ContaId, transacao.Valor, transacao.OperacaoId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

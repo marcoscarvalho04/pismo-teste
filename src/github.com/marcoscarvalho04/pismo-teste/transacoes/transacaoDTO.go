@@ -2,7 +2,6 @@ package transacoes
 
 import (
 	"encoding/json"
-	"net/http"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/logs"
 )
 
@@ -22,9 +21,8 @@ Data da criação: 22/04/2021
 Autor: Marcos Carvalho
 
 */
-func ParseTransaction(request *http.Request) (TransacaoDTO, error) {
+func ParseTransaction(conteudo []byte) (TransacaoDTO, error) {
 	var transacao TransacaoDTO
-	conteudo := make([]byte, request.ContentLength, request.ContentLength)
 	err := json.Unmarshal(conteudo, &transacao)
 	if err != nil {
 		return transacao, err

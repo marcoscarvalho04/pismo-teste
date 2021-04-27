@@ -22,12 +22,12 @@ const CONTA_NAO_EXISTE string = "Conta não existe no sistema!"
 
 func RegistrarContaService(response http.ResponseWriter, conta contas.Contas) {
 
-	_, errRegistro := contas.RegistrarConta(conta.NumeroDocumento)
+	contaId, errRegistro := contas.RegistrarConta(conta.NumeroDocumento)
 	if errRegistro != nil {
 		requisicoesutil.RetornarComInternalErrorServer(ERRO_GERA_ID_CONTA, response)
 		return
 	}
-	requisicoesutil.RetornarRegistroCriado(CONTA_GERADA_SUCESSO+strconv.Itoa(conta.ContaId), response)
+	requisicoesutil.RetornarRegistroCriado(CONTA_GERADA_SUCESSO+strconv.Itoa(contaId), response)
 
 }
 
@@ -37,9 +37,7 @@ func ConsultarContaService(response http.ResponseWriter, contaId int) {
 		requisicoesutil.RetornarComRegistroInexistente(CONTA_NAO_EXISTE, response)
 		return
 	}
-	var contaConsultaRetorno contas.ContaDTO
-	contaConsultaRetorno.ContaId = contaId
-	contaConsultaRetorno.Document_number = conta.NumeroDocumento
+	contaConsultaRetorno := contas.ConvertDTO(conta)
 	retorno, errParseJSON := json.Marshal(contaConsultaRetorno)
 	if errParseJSON != nil {
 		requisicoesutil.RetornarComInternalErrorServer("Não foi possível serializar o JSON de retorno!", response)

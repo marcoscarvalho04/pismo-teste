@@ -14,6 +14,7 @@ const CONTA_NAO_EXISTE string = "Conta não existe no sistema!"
 const OPERACAO_NAO_SUPORTADA string = "Transação não registrada. Operação não suportada pelo sistema"
 const TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO string = "Transação não registrada. Operação de compra e  saque devem ser obrigatoriamente com valor negativo "
 const PAGAMENTO_VALOR_NAO_PERMITIDO string = "valor negativo não é permitido para as transações do tipo pagamento!"
+const VALOR_ZERADO_NAO_PERMITIDO string = "Valor de transação zerado não permitido!"
 
 // Fim contantes de retorno
 
@@ -35,9 +36,18 @@ func configurarPassosValidacao(transacao TransacaoDTO, response http.ResponseWri
 	passos = append(passos, validarOperacao(transacao, response))
 	passos = append(passos, validarOperacaoValor(transacao, response))
 	passos = append(passos, validarValorPagamento(transacao, response))
+	passos = append(passos, validarValorZerado(transacao, response))
 	return passos
 }
-
+func validarValorZerado(transacao TransacaoDTO, response http.ResponseWriter) Validar {
+	return func(transacao TransacaoDTO) error {
+		if transacao.Amount == 0 {
+			requisicoesutil.RetornarComBadRequest(VALOR_ZERADO_NAO_PERMITIDO, response)
+			return errors.New(VALOR_ZERADO_NAO_PERMITIDO)
+		}
+		return nil
+	}
+}
 func validarConta(transacao TransacaoDTO, response http.ResponseWriter) Validar {
 	return func(transacao TransacaoDTO) error {
 		err := contas.IsContaExiste(transacao.Account_id)
@@ -59,11 +69,18 @@ func validarOperacao(transacao TransacaoDTO, response http.ResponseWriter) Valid
 	}
 }
 
+func ValidarOperacoesCompraSaque(transacao TransacaoDTO) error {
+	if (transacao.Operation_type_id == 1 || transacao.Operation_type_id == 2 || transacao.Operation_type_id == 3) && (transacao.Amount > 0) {
+		return errors.New(TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO)
+	}
+	return nil
+}
 func validarOperacaoValor(transacao TransacaoDTO, response http.ResponseWriter) Validar {
 	return func(transacao TransacaoDTO) error {
-		if (transacao.Operation_type_id == 1 || transacao.Operation_type_id == 2 || transacao.Operation_type_id == 3) && (transacao.Amount > 0) {
-			requisicoesutil.RetornarComBadRequest(TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO, response)
-			return errors.New(TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO)
+		err := ValidarOperacoesCompraSaque(transacao)
+		if err != nil {
+			requisicoesutil.RetornarComBadRequest(err.Error(), response)
+			return errors.New(err.Error())
 		}
 		return nil
 	}
@@ -72,6 +89,7 @@ func validarOperacaoValor(transacao TransacaoDTO, response http.ResponseWriter) 
 func validarValorPagamento(transacao TransacaoDTO, response http.ResponseWriter) Validar {
 	return func(transacao TransacaoDTO) error {
 		if transacao.Operation_type_id == 4 && transacao.Amount < 0 {
+			requisicoesutil.RetornarComBadRequest(PAGAMENTO_VALOR_NAO_PERMITIDO, response)
 			return errors.New(PAGAMENTO_VALOR_NAO_PERMITIDO)
 		}
 		return nil
