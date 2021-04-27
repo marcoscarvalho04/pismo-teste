@@ -80,8 +80,8 @@ func TestConvertDTOConta(t *testing.T) {
 		return
 	}
 	contaDTO := ConvertDTO(contaRegistrada)
-	if contaDTO.ContaId != contaRegistrada.ContaId {
-		t.Errorf(ERRO_PARSE_CONTA, "contaId", contaRegistrada.ContaId, contaDTO.ContaId)
+	if contaDTO.Account_id != contaRegistrada.ContaId {
+		t.Errorf(ERRO_PARSE_CONTA, "contaId", contaRegistrada.ContaId, contaDTO.Account_id)
 		return
 	}
 	if contaDTO.Document_number != contaRegistrada.NumeroDocumento {

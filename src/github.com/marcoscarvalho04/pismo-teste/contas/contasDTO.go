@@ -5,14 +5,14 @@ import (
 )
 
 type ContaDTO struct {
-	ContaId         int     `json:account_id`
+	Account_id      int     `json:account_id`
 	Document_number int     `json:document_number`
 	Saldo           float64 `json:saldo`
 }
 
 func ConvertDTO(conta Contas) ContaDTO {
 	var contaDTO ContaDTO
-	contaDTO.ContaId = conta.ContaId
+	contaDTO.Account_id = conta.ContaId
 	contaDTO.Document_number = conta.NumeroDocumento
 	contaDTO.Saldo = conta.Saldo
 	return contaDTO

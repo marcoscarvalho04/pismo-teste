@@ -7,15 +7,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/contas"
+	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/testutil"
+	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/transacoes"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
 const JSON_ENTRADA_CONTAS string = "{\"document_number\": 12345}"
-const JSON_ENTRADA_TRANSACAO string = "{\"account_id\": %d,\"operation_type_id\": %d,\"amount\": %.2f}"
 
 const ERRO_STATUS_CODE string = "Status code inválido. Esperado: %v, obtido: %v"
 const DOCUMENT_NUMBER int = 12345
@@ -99,8 +101,8 @@ func TestConsultarContaComSucesso(t *testing.T) {
 		t.Errorf("Erro ao fazer parse da conta recebida: %v", errParse.Error())
 		return
 	}
-	if contaRecebida.ContaId != contaId {
-		t.Errorf("Erro ao fazer consulta da conta. Id esperado: %v, obtido: %v", contaId, contaRecebida.ContaId)
+	if contaRecebida.Account_id != contaId {
+		t.Errorf("Erro ao fazer consulta da conta. Id esperado: %v, obtido: %v", contaId, contaRecebida.Account_id)
 		return
 	}
 	if contaRecebida.Document_number != DOCUMENT_NUMBER {
@@ -130,13 +132,161 @@ func TestCriarTransacaoComSucesso(t *testing.T) {
 		t.Errorf("Erro ao criar conta nova para teste: %v", err.Error())
 		return
 	}
-	jsonEntradaTransacao := formatarNovaEntradaTransacao(novaConta.ContaId, 4, 100)
+	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, 4, 100)
 	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
-	if statusCode != 200 {
-		t.Errorf(ERRO_STATUS_CODE, 200, statusCode)
+	if statusCode != 201 {
+		t.Errorf(ERRO_STATUS_CODE, 201, statusCode)
 		return
 	}
-	t.Logf("resultado: " + response)
+	novaConta, errConsultarConta := contas.ConsultarConta(novaConta.ContaId)
+	if errConsultarConta != nil {
+		t.Errorf(errConsultarConta.Error())
+		return
+	}
+	if novaConta.Saldo != 100 {
+		t.Errorf("Erro ao validar saldo da conta. Esperado: %v, obtido: %v", 100, novaConta.Saldo)
+		return
+	}
+
+	t.Logf("Transação registrada para a conta: %v ", string(response[37]))
+
+}
+
+func TestCriarTransacaoSemSaldo(t *testing.T) {
+	novaConta, err := criarContaParaTeste(t)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, 3, -100)
+	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
+	if statusCode != 400 {
+		t.Errorf(ERRO_STATUS_CODE, 400, statusCode)
+		return
+	}
+	if !strings.Contains(response, "Erro ao abater saldo. Saldo da conta é menor do que o valor da transação.") {
+		t.Errorf("Mensagem de retorno não esperada: %v", response)
+		return
+	}
+
+}
+func TestCriarTransacaoInvalidaSaque(t *testing.T) {
+	err := criarERegistrarTransacao(t, 3, 100, transacoes.TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO)
+	if err == nil {
+		t.Logf("TestCriarTransacaoInvalidaSaque passou!")
+	}
+}
+
+func TestCriarTransacaoInvalidaCompraParcelada(t *testing.T) {
+	err := criarERegistrarTransacao(t, 2, 100, transacoes.TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO)
+	if err == nil {
+		t.Logf("TestCriarTransacaoInvalidaCompraParcelada passou!")
+	}
+}
+func TestCriarTransacaoInvalidaCompra(t *testing.T) {
+	err := criarERegistrarTransacao(t, 1, 100, transacoes.TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO)
+	if err == nil {
+		t.Logf("TestCriarTransacaoInvalidaCompra passou!")
+	}
+}
+func TestCriarPagamentoInvalido(t *testing.T) {
+	err := criarERegistrarTransacao(t, 4, -100, transacoes.PAGAMENTO_VALOR_NAO_PERMITIDO)
+	if err == nil {
+		t.Logf("TestCriarPagamentoInvalido passou!")
+	}
+}
+func TestCriarTransacaoValorZerado(t *testing.T) {
+	err := criarERegistrarTransacao(t, 3, 0, transacoes.VALOR_ZERADO_NAO_PERMITIDO)
+	if err == nil {
+		t.Logf("TestCriarTransacaoValorZerado passou!")
+	}
+}
+
+func TestTransacaoPagamentoSaque(t *testing.T) {
+	novaConta, err := criarContaParaTeste(t)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	var transacaoPagamento transacoes.TransacoesModel
+	transacaoPagamento.ContaId = novaConta.ContaId
+	transacaoPagamento.Data = time.Now()
+	transacaoPagamento.Valor = 200
+	transacaoPagamento.OperacaoId = 4
+	_, errTransacaoPagamento := transacoes.RegistrarTransacao(transacaoPagamento)
+	if errTransacaoPagamento != nil {
+		t.Errorf(fmt.Sprintf("Erro ao registrar transação de pagamento: %v", errTransacaoPagamento.Error()))
+		return
+	}
+	novaConta, errConsultarConta := contas.ConsultarConta(novaConta.ContaId)
+	if errConsultarConta != nil {
+		t.Errorf(fmt.Sprintf("Erro ao consultar conta com novo saldo: %v", errConsultarConta.Error()))
+		return
+	}
+	if novaConta.Saldo != 200 {
+		t.Errorf("Saldo da conta diferente do esperado. Esperado: %v, obtido: %v", 200, novaConta.Saldo)
+		return
+	}
+	var transacaoSaque transacoes.TransacoesModel
+	transacaoSaque.ContaId = novaConta.ContaId
+	transacaoSaque.Data = time.Now()
+	transacaoSaque.OperacaoId = 3
+	transacaoSaque.Valor = -200
+
+	_, errTransacaoSaque := transacoes.RegistrarTransacao(transacaoSaque)
+	if errTransacaoSaque != nil {
+		t.Errorf("Erro ao registrar saque: %v", errTransacaoSaque.Error())
+		return
+	}
+	novaConta, errConsultarConta = contas.ConsultarConta(novaConta.ContaId)
+	if errConsultarConta != nil {
+		t.Errorf("Erro ao consultar conta: %v", errConsultarConta.Error())
+		return
+	}
+	if novaConta.Saldo != 0 {
+		t.Errorf("Saldo da conta diferente do esperado. Esperado: %v, obtido: %v", 0, novaConta.Saldo)
+		return
+	}
+	t.Logf("TestTransacaoPagamentoSaque passou!")
+}
+
+func TestCriarTransacaoParaContaInexistente(t *testing.T) {
+	var novaTransacao transacoes.TransacoesModel
+	novaTransacao.ContaId = 500
+	novaTransacao.OperacaoId = 1
+	novaTransacao.Valor = -100
+	novaTransacao.Data = time.Now()
+
+	transacaoId, err := transacoes.RegistrarTransacao(novaTransacao)
+	if err == nil {
+		t.Errorf("Esperado erro, mas não houve exceção.")
+		return
+	}
+	if transacaoId > 0 {
+		t.Errorf("TransacaoId invalido! Esperado: %v, obtido %v", 0, transacaoId)
+		return
+	}
+	t.Logf("TestCriarTransacaoParaContaInexistente passou!")
+
+}
+
+func criarERegistrarTransacao(t *testing.T, operationId int, valor float64, mensagemRetorno string) error {
+	novaConta, err := criarContaParaTeste(t)
+	if err != nil {
+		t.Errorf(err.Error())
+		return err
+	}
+	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, operationId, valor)
+	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
+	if statusCode != 400 {
+		t.Errorf(ERRO_STATUS_CODE, 400, statusCode)
+		return errors.New(fmt.Sprintf(ERRO_STATUS_CODE, 400, statusCode))
+	}
+	if response != mensagemRetorno {
+		t.Errorf("Mensagem de retorno não esperada.\n Esperada: %v, \n Obtida %v ", mensagemRetorno, response)
+		return errors.New(fmt.Sprintf("Mensagem de retorno não esperada.\n Esperada: %v, \n Obtida %v ", mensagemRetorno, response))
+	}
+	return nil
 
 }
 
@@ -166,8 +316,4 @@ func criarContaParaTeste(t *testing.T) (contas.Contas, error) {
 	}
 	conta = contas.ConvertConta(contaRecebida)
 	return conta, nil
-}
-
-func formatarNovaEntradaTransacao(contaId int, operationId int, valor float64) string {
-	return fmt.Sprintf(JSON_ENTRADA_TRANSACAO, contaId, operationId, valor)
 }

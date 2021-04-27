@@ -92,6 +92,6 @@ func ConvertConta(conta ContaDTO) Contas {
 	var contas Contas
 	contas.NumeroDocumento = conta.Document_number
 	contas.Saldo = conta.Saldo
-	contas.ContaId = conta.ContaId
+	contas.ContaId = conta.Account_id
 	return contas
 }

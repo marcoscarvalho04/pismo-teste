@@ -12,7 +12,7 @@ type Validar func(TransacaoDTO) error
 // Constantes de retorno
 const CONTA_NAO_EXISTE string = "Conta não existe no sistema!"
 const OPERACAO_NAO_SUPORTADA string = "Transação não registrada. Operação não suportada pelo sistema"
-const TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO string = "Transação não registrada. Operação de compra e  saque devem ser obrigatoriamente com valor negativo "
+const TRANSACAO_SAQUE_COMPRA_VALOR_NAO_PERMITIDO string = "Transação não registrada. Operação de compra e saque devem ser obrigatoriamente com valor negativo "
 const PAGAMENTO_VALOR_NAO_PERMITIDO string = "valor negativo não é permitido para as transações do tipo pagamento!"
 const VALOR_ZERADO_NAO_PERMITIDO string = "Valor de transação zerado não permitido!"
 
