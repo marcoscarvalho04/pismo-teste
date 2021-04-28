@@ -72,6 +72,9 @@ func ConsultarConta(contaId int) (Contas, error) {
 }
 
 func ModificarSaldo(contaId int, valor float64, operationId int) error {
+	if IsContaExiste(contaId) != nil {
+		return errors.New("Erro na consulta da conta! conta não registrada na plataforma")
+	}
 	conta := ContasRegistradas[contaId]
 	if operationId >= 1 && operationId <= 3 {
 		if valor < 0 {
