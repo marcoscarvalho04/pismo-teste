@@ -53,7 +53,7 @@ func validarConta(transacao TransacaoDTO, response http.ResponseWriter) Validar 
 		err := contas.IsContaExiste(transacao.Account_id)
 		if err != nil {
 			requisicoesutil.RetornarComRegistroInexistente(CONTA_NAO_EXISTE, response)
-			return err
+			return errors.New(CONTA_NAO_EXISTE)
 		}
 		return nil
 	}
@@ -61,7 +61,7 @@ func validarConta(transacao TransacaoDTO, response http.ResponseWriter) Validar 
 
 func validarOperacao(transacao TransacaoDTO, response http.ResponseWriter) Validar {
 	return func(transacao TransacaoDTO) error {
-		if transacao.Operation_type_id > 4 && transacao.Operation_type_id < 1 {
+		if transacao.Operation_type_id > 4 || transacao.Operation_type_id < 1 {
 			requisicoesutil.RetornarComBadRequest(OPERACAO_NAO_SUPORTADA, response)
 			return errors.New(OPERACAO_NAO_SUPORTADA)
 		}

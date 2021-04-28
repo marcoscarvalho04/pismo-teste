@@ -10,7 +10,7 @@ type Contas struct {
 	ContaId         int
 	NumeroDocumento int
 	Saldo           float64
-	transacoes      []int
+	Transacoes      []int
 }
 
 var ContasRegistradas map[int]Contas
@@ -58,7 +58,7 @@ func VincularTransacao(contaId int, transacaoId int) error {
 		return errors.New("Erro no registro da transação! conta não existe na plataforma")
 	}
 	conta := ContasRegistradas[contaId]
-	conta.transacoes = append(conta.transacoes, transacaoId)
+	conta.Transacoes = append(conta.Transacoes, transacaoId)
 	ContasRegistradas[contaId] = conta
 	return nil
 }

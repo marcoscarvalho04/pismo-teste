@@ -102,3 +102,35 @@ func TestConverterTransacaoDTO(t *testing.T) {
 	t.Logf("TestConverterTransacaoDTO passou!")
 
 }
+func TestVincularTransacaoComSucesso(t *testing.T) {
+	conta, err := contas.RegistrarConta(12345)
+	if err != nil {
+		t.Errorf("Erro ao registrar conta %v", err.Error())
+		return
+	}
+	var transacaoNova TransacoesModel
+	transacaoNova.ContaId = conta
+	transacaoNova.Data = time.Now()
+	transacaoNova.OperacaoId = 4
+	transacaoNova.Valor = 10
+
+	transacao, errRegistrarTransacao := RegistrarTransacao(transacaoNova)
+	if errRegistrarTransacao != nil {
+		t.Errorf("Erro ao registrar transação para a conta %v ", conta)
+		return
+	}
+	contaRegistrada, errConsultarConta := contas.ConsultarConta(conta)
+	if errConsultarConta != nil {
+		t.Errorf("Erro ao consultar conta: %v", conta)
+		return
+	}
+	transacoesDaConta := contaRegistrada.Transacoes
+	for _, value := range transacoesDaConta {
+		if value == transacao {
+			t.Logf("Passou! Transação registrada e vinculada com sucesso para a conta: %v", conta)
+			return
+		}
+	}
+	t.Errorf("Erro! Transação não vinculada a conta: %v", conta)
+
+}
