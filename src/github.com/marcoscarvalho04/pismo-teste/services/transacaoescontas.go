@@ -10,7 +10,7 @@ import (
 )
 
 type ContaTransacaoDTO struct {
-	ContaId    int                       `json: contaId`
+	Conta      contas.ContaDTO           `json: conta`
 	Transacoes []transacoes.TransacaoDTO `json: transacoes`
 }
 
@@ -29,7 +29,7 @@ func ConsultarTransacaoContaService(contaId int, response http.ResponseWriter) {
 		return
 	}
 	transacoesDaConta := contaConsultada.Transacoes
-	consultarContaTransacao.ContaId = contaId
+	consultarContaTransacao.Conta = contas.ConvertDTO(contaConsultada)
 	var todasTransacoes []transacoes.TransacaoDTO
 	for _, value := range transacoesDaConta {
 		transacaoConsultada, errConsultarTransacao := transacoes.ConsultarTransacao(value)

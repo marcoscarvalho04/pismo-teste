@@ -95,35 +95,39 @@ func TestConvertDTOConta(t *testing.T) {
 	t.Logf("ConvertDTO em contas passou! ")
 }
 
-/*
-func TestVincularTransacaoComSucesso(t *testing.T) {
+func TestContaModificarSaldoSucesso(t *testing.T) {
 	conta, err := RegistrarConta(numeroDocumento)
 	if err != nil {
-		t.Errorf("Erro ao registrar conta %v", err.Error())
-		return
-	}
-	var transacaoNova transacoes.TransacoesModel
-	transacaoNova.ContaId = conta
-	transacaoNova.Data = time.Now()
-	transacaoNova.OperacaoId = 4
-	transacaoNova.Valor = 10
-
-	transacao, errRegistrarTransacao := transacoes.RegistrarTransacao(transacaoNova)
-	if errRegistrarTransacao != nil {
-		t.Errorf("Erro ao registrar transação para a conta %v ", conta)
+		t.Errorf("Erro ao registrar conta: %v", err.Error())
 		return
 	}
 	contaRegistrada, errConsultarConta := ConsultarConta(conta)
 	if errConsultarConta != nil {
-		t.Errorf("Erro ao consultar conta: %v", conta)
+		t.Errorf("Erro ao consultar conta: %v", errConsultarConta.Error())
 		return
 	}
-	transacoesDaConta := contaRegistrada.transacoes
-	for value := range transacoesDaConta {
-		if value == transacao {
-			t.Logf("Passou! Transação registrada e vinculada com sucesso para a conta: %v", conta)
-			return
-		}
+	ModificarSaldo(contaRegistrada.ContaId, 100, 4)
+	contaRegistrada, errConsultarConta = ConsultarConta(conta)
+	if errConsultarConta != nil {
+		t.Errorf("Erro ao consultar conta: %v", errConsultarConta.Error())
+		return
 	}
-	t.Errorf("Erro! Transação não vinculada a conta: %v", conta)
-}*/
+	if contaRegistrada.Saldo != 100 {
+		t.Errorf("Erro ao validar saldo da conta. Esperado: %v, Obtido: %v", 100, contaRegistrada.Saldo)
+		return
+	}
+	t.Logf("TestContaModificarSaldoSucesso passou!")
+}
+
+func TestModificarContaSemSaldo(t *testing.T) {
+	conta, err := RegistrarConta(numeroDocumento)
+	if err != nil {
+		t.Errorf("Erro ao registrar conta: %v", err.Error())
+	}
+	errModificarSaldo := ModificarSaldo(conta, 100, 3)
+	if errModificarSaldo == nil {
+		t.Errorf("Erro. Esperado erro e não encontrado")
+		return
+	}
+	t.Logf("TestModificarContaSemSaldo passou!")
+}

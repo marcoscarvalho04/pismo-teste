@@ -317,8 +317,8 @@ func TestConsultarTransacoesContaSucesso(t *testing.T) {
 		t.Errorf("Erro ao deserializar o json: %v", err.Error())
 		return
 	}
-	if transacaoRetornada.ContaId != conta {
-		t.Errorf("Erro ao consultar conta. Esperado: %v, obtido: %v", conta, transacaoRetornada.ContaId)
+	if transacaoRetornada.Conta.Account_id != conta {
+		t.Errorf("Erro ao consultar conta. Esperado: %v, obtido: %v", conta, transacaoRetornada.Conta.Account_id)
 		return
 	}
 	if len(transacaoRetornada.Transacoes) != 1 {
