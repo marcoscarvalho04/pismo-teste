@@ -32,6 +32,7 @@ func manipularRequisicoes() {
 	router.HandleFunc("/accounts", requisicoes.ResponderCriarConta).Methods("POST")
 	router.HandleFunc("/accounts/{id}", requisicoes.ResponderConsultarConta).Methods("GET")
 	router.HandleFunc("/transactions", requisicoes.ResponderCriarTransacao).Methods("POST")
+	router.HandleFunc("/transactions/accounts/{id}", requisicoes.ResponderConsultarTransacaoPorConta).Methods("GET")
 	logs.RegistrarLogInformativo("STEP 2 - Inicializando configurações do sistema")
 	constantes.ColetarInformacoesSistema()
 	logs.RegistrarLogInformativo("STEP 3 - Iniciando servidor de registro de contas e transações na porta: " + constantes.Constantes.Config.Porta)

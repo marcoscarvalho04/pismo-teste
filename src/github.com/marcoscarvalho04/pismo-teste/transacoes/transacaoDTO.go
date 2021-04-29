@@ -9,6 +9,7 @@ type TransacaoDTO struct {
 	Account_id        int     `json:account_id`
 	Operation_type_id int     `json:operation_type_id`
 	Amount            float64 `json:amount`
+	TransactionId     int     `json:transactionId`
 }
 
 /*
@@ -36,5 +37,6 @@ func ConverterDTO(transacao TransacoesModel) TransacaoDTO {
 	transacaoDTO.Account_id = transacao.ContaId
 	transacaoDTO.Amount = transacao.Valor
 	transacaoDTO.Operation_type_id = transacao.OperacaoId
+	transacaoDTO.TransactionId = transacao.TransacaoId
 	return transacaoDTO
 }

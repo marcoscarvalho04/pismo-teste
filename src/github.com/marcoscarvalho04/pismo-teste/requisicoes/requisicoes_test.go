@@ -1,20 +1,17 @@
 package requisicoes
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/contas"
+	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/services"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/testutil"
 	"pismo-teste/github.com/marcoscarvalho04/pismo-teste/transacoes"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 const JSON_ENTRADA_CONTAS string = "{\"document_number\": 12345}"
@@ -22,35 +19,8 @@ const JSON_ENTRADA_CONTAS string = "{\"document_number\": 12345}"
 const ERRO_STATUS_CODE string = "Status code inválido. Esperado: %v, obtido: %v"
 const DOCUMENT_NUMBER int = 12345
 
-type handler func(http.ResponseWriter, *http.Request)
-
-func fazerRequisicaoParaURL(method string, url string, body string, handler handler, params map[string]string) (statusCode int, responseString string) {
-	var req *http.Request
-
-	if len(body) == 0 {
-		req = httptest.NewRequest(method, url, nil)
-	} else {
-		req = httptest.NewRequest(method, url, strings.NewReader(body))
-	}
-	if params != nil {
-		req = mux.SetURLVars(req, params)
-	}
-
-	w := httptest.NewRecorder()
-	handler(w, req)
-	resp := w.Result()
-	response, errBody := ioutil.ReadAll(resp.Body)
-	if errBody != nil {
-		statusCode = 0
-		responseString = "Erro"
-		return statusCode, responseString
-	}
-	responseString = string(response)
-	statusCode = resp.StatusCode
-	return statusCode, responseString
-}
 func TestResponderCriarContaSucesso(t *testing.T) {
-	statusCode, response := fazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
+	statusCode, response := testutil.FazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
 	if statusCode != 201 {
 		t.Errorf(ERRO_STATUS_CODE, 201, statusCode)
 		return
@@ -65,7 +35,7 @@ func TestResponderCriarContaSucesso(t *testing.T) {
 }
 
 func TestResponderCriarContaSemBody(t *testing.T) {
-	statusCode, response := fazerRequisicaoParaURL("POST", "/accounts", "", ResponderCriarConta, nil)
+	statusCode, response := testutil.FazerRequisicaoParaURL("POST", "/accounts", "", ResponderCriarConta, nil)
 	if statusCode != 400 {
 		t.Errorf(ERRO_STATUS_CODE, 400, statusCode)
 		return
@@ -78,7 +48,7 @@ func TestResponderCriarContaSemBody(t *testing.T) {
 }
 
 func TestConsultarContaComSucesso(t *testing.T) {
-	statusCodeCriacaoConta, responseCriarConta := fazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
+	statusCodeCriacaoConta, responseCriarConta := testutil.FazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
 	if statusCodeCriacaoConta != 201 {
 		t.Errorf(ERRO_STATUS_CODE, 201, statusCodeCriacaoConta)
 		return
@@ -90,7 +60,7 @@ func TestConsultarContaComSucesso(t *testing.T) {
 	}
 	params := make(map[string]string)
 	params["id"] = strconv.Itoa(contaId)
-	statusCode, response := fazerRequisicaoParaURL("GET", "/accounts/"+strconv.Itoa(contaId), "", ResponderConsultarConta, params)
+	statusCode, response := testutil.FazerRequisicaoParaURL("GET", "/accounts/"+strconv.Itoa(contaId), "", ResponderConsultarConta, params)
 	if statusCode != 200 {
 		t.Errorf(ERRO_STATUS_CODE, 200, statusCode)
 		t.Logf(response)
@@ -118,7 +88,7 @@ func TestConsultarContaComSucesso(t *testing.T) {
 }
 
 func TestConsultarContaSemParametro(t *testing.T) {
-	statusCode, _ := fazerRequisicaoParaURL("GET", "/accounts", "", ResponderConsultarConta, nil)
+	statusCode, _ := testutil.FazerRequisicaoParaURL("GET", "/accounts", "", ResponderConsultarConta, nil)
 	statusCodeEsperado := 400
 	if statusCode != statusCodeEsperado {
 		t.Errorf(ERRO_STATUS_CODE, statusCodeEsperado, statusCode)
@@ -133,7 +103,7 @@ func TestCriarTransacaoComSucesso(t *testing.T) {
 		return
 	}
 	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, 4, 100)
-	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
+	statusCode, response := testutil.FazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
 	if statusCode != 201 {
 		t.Errorf(ERRO_STATUS_CODE, 201, statusCode)
 		return
@@ -159,7 +129,7 @@ func TestCriarTransacaoSemSaldo(t *testing.T) {
 		return
 	}
 	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, 3, -100)
-	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
+	statusCode, response := testutil.FazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
 	if statusCode != 400 {
 		t.Errorf(ERRO_STATUS_CODE, 400, statusCode)
 		return
@@ -277,7 +247,7 @@ func criarERegistrarTransacao(t *testing.T, operationId int, valor float64, mens
 		return err
 	}
 	jsonEntradaTransacao := testutil.FormatarNovaEntradaTransacao(novaConta.ContaId, operationId, valor)
-	statusCode, response := fazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
+	statusCode, response := testutil.FazerRequisicaoParaURL("POST", "/transactions", jsonEntradaTransacao, ResponderCriarTransacao, nil)
 	if statusCode != 400 {
 		t.Errorf(ERRO_STATUS_CODE, 400, statusCode)
 		return errors.New(fmt.Sprintf(ERRO_STATUS_CODE, 400, statusCode))
@@ -292,7 +262,7 @@ func criarERegistrarTransacao(t *testing.T, operationId int, valor float64, mens
 
 func criarContaParaTeste(t *testing.T) (contas.Contas, error) {
 	var conta contas.Contas
-	statusCodeCriacaoConta, responseCriarConta := fazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
+	statusCodeCriacaoConta, responseCriarConta := testutil.FazerRequisicaoParaURL("POST", "/accounts", JSON_ENTRADA_CONTAS, ResponderCriarConta, nil)
 	if statusCodeCriacaoConta != 201 {
 		t.Errorf(ERRO_STATUS_CODE, 201, statusCodeCriacaoConta)
 		return conta, errors.New(fmt.Sprint(ERRO_STATUS_CODE, 201, statusCodeCriacaoConta))
@@ -304,7 +274,7 @@ func criarContaParaTeste(t *testing.T) (contas.Contas, error) {
 	}
 	params := make(map[string]string)
 	params["id"] = strconv.Itoa(contaId)
-	statusCode, response := fazerRequisicaoParaURL("GET", "/accounts/"+strconv.Itoa(contaId), "", ResponderConsultarConta, params)
+	statusCode, response := testutil.FazerRequisicaoParaURL("GET", "/accounts/"+strconv.Itoa(contaId), "", ResponderConsultarConta, params)
 	if statusCode != 200 {
 		t.Errorf(ERRO_STATUS_CODE, 200, statusCode)
 		return conta, errors.New(fmt.Sprintf(ERRO_STATUS_CODE, 200, statusCode))
@@ -316,4 +286,49 @@ func criarContaParaTeste(t *testing.T) (contas.Contas, error) {
 	}
 	conta = contas.ConvertConta(contaRecebida)
 	return conta, nil
+}
+
+func TestConsultarTransacoesContaSucesso(t *testing.T) {
+	conta, errCriarConta := contas.RegistrarConta(DOCUMENT_NUMBER)
+	if errCriarConta != nil {
+		t.Errorf("Erro ao criar conta: %v", errCriarConta.Error())
+		return
+	}
+	var registrarNovaTransacao transacoes.TransacoesModel
+	registrarNovaTransacao.ContaId = conta
+	registrarNovaTransacao.Data = time.Now()
+	registrarNovaTransacao.OperacaoId = 4
+	registrarNovaTransacao.Valor = 100
+	transacaoId, errRegistrarTransacao := transacoes.RegistrarTransacao(registrarNovaTransacao)
+	if errRegistrarTransacao != nil {
+		t.Errorf("Erro ao registrar transação: %v", errRegistrarTransacao.Error())
+		return
+	}
+	params := make(map[string]string)
+	params["id"] = strconv.Itoa(conta)
+	statusCode, response := testutil.FazerRequisicaoParaURL("GET", "/transactions/accounts/{id}", "", ResponderConsultarTransacaoPorConta, params)
+	if statusCode != 200 {
+		t.Errorf(ERRO_STATUS_CODE, 200, statusCode)
+		return
+	}
+	var transacaoRetornada services.ContaTransacaoDTO
+	err := json.Unmarshal([]byte(response), &transacaoRetornada)
+	if err != nil {
+		t.Errorf("Erro ao deserializar o json: %v", err.Error())
+		return
+	}
+	if transacaoRetornada.ContaId != conta {
+		t.Errorf("Erro ao consultar conta. Esperado: %v, obtido: %v", conta, transacaoRetornada.ContaId)
+		return
+	}
+	if len(transacaoRetornada.Transacoes) != 1 {
+		t.Errorf("Erro ao verificar transações vinculadas. Esperado: %v, obtido: %v", 1, len(transacaoRetornada.Transacoes))
+		return
+	}
+	if transacaoRetornada.Transacoes[0].TransactionId != transacaoId {
+		t.Errorf("Erro ao verificar transação vinculada. Id de transação esperado: %v, obtido: %v", transacaoId, transacaoRetornada.Transacoes[0].TransactionId)
+		return
+	}
+	t.Logf("TestConsultarTransacoesContaSucesso")
+
 }

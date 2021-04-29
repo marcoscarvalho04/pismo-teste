@@ -20,10 +20,11 @@ Ele é responsável por criar operações de adição de transação à conta.
 */
 
 type TransacoesModel struct {
-	ContaId    int
-	OperacaoId int
-	Valor      float64
-	Data       time.Time
+	ContaId     int
+	OperacaoId  int
+	Valor       float64
+	Data        time.Time
+	TransacaoId int
 }
 
 type Transacoes interface {
@@ -62,6 +63,7 @@ func RegistrarTransacao(novaTransacao TransacoesModel) (int, error) {
 		return 0, errors.New("Não foi possível gerar o id da transação. Último ID gerado: " + strconv.Itoa(idTransacao))
 
 	}
+	novaTransacao.TransacaoId = idTransacao
 	TransacoesRegistradas[idTransacao] = novaTransacao
 	contas.VincularTransacao(novaTransacao.ContaId, idTransacao)
 	return idTransacao, nil
@@ -81,6 +83,7 @@ func ConverterTransacao(transacao TransacaoDTO) TransacoesModel {
 	transacaoModel.Data = time.Now()
 	transacaoModel.OperacaoId = transacao.Operation_type_id
 	transacaoModel.Valor = transacao.Amount
+	transacaoModel.TransacaoId = transacao.TransactionId
 	return transacaoModel
 }
 

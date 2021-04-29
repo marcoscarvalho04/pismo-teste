@@ -29,6 +29,10 @@ func TestConvertDTOSucesso(t *testing.T) {
 		t.Errorf(ERRO_VALIDACAO_CAMPO, "operationId", transacaoDTO.Operation_type_id, transacao.OperacaoId)
 		return
 	}
+	if transacaoDTO.TransactionId != transacao.TransacaoId {
+		t.Errorf(ERRO_VALIDACAO_CAMPO, "transacationID", transacaoDTO.TransactionId, transacao.TransacaoId)
+		return
+	}
 	t.Logf("TestParseTransactionComSucesso passou!")
 }
 

@@ -1,6 +1,7 @@
 package requisicoes
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,7 +24,22 @@ Criador: Marcos Siqueira
 Breve Descrição: Funcionalidade que redireciona e chama a interface de serviços para
 que esta interface faça o que seja preciso para responder corretamente à requisição.
 */
+func ResponderConsultarTransacaoPorConta(response http.ResponseWriter, request *http.Request) {
+	logs.RegistrarLogInformativo("Requisição recebida, iniciando tratamento!")
+	vars := mux.Vars(request)
+	contaIdRecebido := vars["id"]
+	contaId, err := strconv.Atoi(contaIdRecebido)
+	if err != nil {
+		requisicoesutil.RetornarComBadRequest(fmt.Sprintf("Erro ao fazer o parse da contaId recebida: %v", contaId), response)
+		return
+	}
+	if contaId <= 0 {
+		requisicoesutil.RetornarComBadRequest("Conta id deve ser maior do que 0", response)
+		return
+	}
+	services.ConsultarTransacaoContaService(contaId, response)
 
+}
 func ResponderCriarTransacao(response http.ResponseWriter, request *http.Request) {
 	logs.RegistrarLogInformativo("Transação recebida, iniciando tratamento.")
 	conteudo := make([]byte, request.ContentLength, request.ContentLength)

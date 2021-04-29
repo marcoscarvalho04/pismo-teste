@@ -1,6 +1,8 @@
 package testutil
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const JSON_ENTRADA_TRANSACAO string = "{\"account_id\": %d,\"operation_type_id\": %d,\"amount\": %.2f}"
 

@@ -98,6 +98,10 @@ func TestConverterTransacaoDTO(t *testing.T) {
 		t.Errorf(fmt.Sprintf(ERRO_VALIDAR_CAMPO, "operationId", transacao.OperacaoId, transacaoDTO.Operation_type_id))
 		return
 	}
+	if transacao.TransacaoId != transacaoDTO.TransactionId {
+		t.Errorf(ERRO_VALIDAR_CAMPO, "transactionID", transacao.TransacaoId, transacaoDTO.TransactionId)
+		return
+	}
 
 	t.Logf("TestConverterTransacaoDTO passou!")
 
